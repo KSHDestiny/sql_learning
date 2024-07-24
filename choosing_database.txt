@@ -1,0 +1,220 @@
+Two Main Types of Data Models
+    1. Relational
+        - Also known as SQL databases
+        - Examples: PostgreSQL, MySQL
+        # MySQL is a relational database, whereas postgres is object-relational.
+    2. Non-relational
+        - Also known as NoSQL databases
+        - Examples: Mongo, Cassandra
+        - Many types: document, key-value, wide-column, and graph databases
+
+    # Relational Databases uses SQL to make accessing easy and organized since data is stored in fixed tables in columns. The fixed structure is very good for data integrity but less flexibility for scaling horizontally.
+    # Most NoSQL databases don't support ACID by nature.
+
+
+    Installation Databases (eg. PostgreSQL)
+        - Download PostgreSQL -> https://www.postgresql.org/download
+        - Use GUI Tool for PostgreSQL (VSCode extension - cweijan.vscode-mysql-client2)
+
+    Mongo Installation
+        - Download MongoDB -> https://fastdl.mongodb.org/windows/mongodb-windows-x86_64-7.0.12-signed.msi
+        - Download mongosh -> https://downloads.mongodb.com/compass/mongosh-2.2.12-win32-x64.zip?_ga=2.265472781.306132787.1721712482-336789729.1721712481
+        - Move mongosh files from C:\...\mongosh-2.2.12-win32-x64\bin to C:\Program Files\MongoDB\Server\7.0\bin
+        - Use GUI Tool for MongoDB (VSCode extension or MongoDBCompass)
+
+ACID
+    Atomicity - Entire transaction either fails or succeeds
+    Consistency - Transaction follows the constraints put in place
+    Isolation - Transaction remains the same even if done with other transactions
+    Durability - Transaction won't get removed from system failures
+
+PostgreSQL
+    - Creating Schema
+        ~ create schema new_schema_name;
+
+    - Creating a View
+        ~ create view customer_and_orders as
+            select * from customers c
+            join orders o on o.customer_id = c.id
+
+    - Creating Materialized View    # mutating child data can't change materialized view data / holding data constantly until refreshing
+        ~ create materialized view customer_and_orders_mat as
+            select * from customers c
+            join orders o on o.customer_id = c.id
+
+    - Refreshing Materialized View
+        ~ refresh materialized view customer_and_orders_mat
+
+    - Fetch Statement
+        ~ select * from customers limit 10;
+        ~ select * from customers fetch first 10 rows only;
+
+    - Intersect Statement ( = inner join )
+        ~ select distinct c.id from customers c
+            join orders o on o.customer_id = c.id;
+        ~ select id from customers
+            intersect
+            select customer_id from orders;
+
+    - Full Outer Join
+        ~ select * from customers
+            full outer join orders o on o.customer_id = c.id;
+
+    - Check Constraints
+        ~ create table christmas_products (
+            id text not null,
+            price integer not null check (price > 0),
+            christmas boolean
+        );
+
+    - Cascade
+        ~ drop table christmas_products cascade;
+
+    - Inheritance
+        ~ create table desserts(
+            chocolate boolean
+        )inherits (products);   # desserts table inherits column types from products table
+
+    - JSON Object
+        ~ select json_build_object('id',id,'name',name,'category',category) from products;
+
+    - JSON Object into a Table
+        ~ create table product_json (
+            product_names json
+        );
+        insert into product_json
+            select json_build_object('id',id,'name',name,'category',category) from products;
+
+    - Create Function
+        ~ create function add(integer, integer) returns integer
+            as 'select $1 + $2'
+            language sql
+            immutable
+            returns null on null input;
+        select add(1,4);
+
+
+MySQL
+    - ifnull Statement
+        ~ select ifnull (first_name, 'Error') from customers;
+        ~ select case when first_name is null
+            then 'Error'
+            else first_name
+            end as first_name
+            from customers;
+
+
+Mongo
+    # Mongo and other NoSQL databases can be thought of being built on the CAP theorem.
+    CAP
+        - Consistency           # able to keep the same information in any of the node
+        - Availability          # anyone can quickly pull up the data or at least get a response from the system
+        - Partition Tolerance   # if there is a failure in one of the nodes, it will create a partition between nodes but the user should still be able to access the same data from another node.
+
+    CA - MySQL, PostgreSQL, Vertica, etc.
+    AP - Cassandra, SimpleDB, Risk, Dynamo, etc.
+    CP - MongoDB, HBase, Bigtable, Redis, etc.
+
+    - Create Collection
+        ~ db.createCollection('customers');
+
+    - Read Object in Collection
+        ~ db.customers.find();
+        ~ db.customers.find({FirstName:'Amata'});
+
+    - Create Object in Collection
+        ~ db.customers.insertOne(
+            {
+                _id: 1,
+                FirstName: 'Amata',
+                LastName: 'Lee',
+                Email: 'amata@test.com',
+                Phone: '111-111-1111'
+            }
+        );
+
+    - Update Object in Collection
+        ~ db.customers.updateMany(
+            {
+                Email:'amata@test.com'
+            },
+            {
+                $set:{Email:'lee@test.com'}
+            }
+        );
+
+    - Delete Object in Collection
+        ~ db.customers.remove(
+            {
+                FirstName: 'Amata'
+            }
+        );
+
+
+Snowflake (Cloud Data Warehouse)
+    - Created in 2012 by two former employees of Oracle
+    - Snowflake is one of the first data warehouses to offer cloud services
+    - Data on the cloud means no need to maintain massive servers
+    - Can create a data warehouse on its site without having to download anything
+    - All-encompassing data platform
+    - Scalable pricing and multi-cluster workload
+    - Low-maintenance database that automates database administrator (DBA) work
+    - Low-cost storage with 2X-3X compression ratio
+
+    New Features
+        - Trailing comma at end of SELECT clause: this is helpful for commenting out the last line without needing a leading comma
+        - GROUP BY ALL: group by all items without needing to list them out
+        - IF NOT EXISTS on column level: add or drop a column without needing to check if the column exists
+        - SELECT * EXCLUDE/RENAME: modify the results (for example, renaming or excluding a column) in a SELECT statement
+
+
+Amazon Web Services (Infrastructure Platform)
+    - increased in popularity since its launch in 2006
+    - AWS probably offers the most in terms of resources, making it highly scalable and elastic.
+    - AWS has many services including many data warehouse options and applications STEM make it flexible. Therefore, if we are considering moving our data to AWS we can likely use the same programming and SQL languages we already use.
+
+    Redshift
+        - Got its name from implying a shift from Oracle (Big Red)
+        - Designed to handle analytic workloads of petabytes of data (big data)
+        - Easily create clusters(the data warehouse on nodes) online
+        - Biggest use case is for analytics: business and operational analytics
+
+        - Creating a table
+            ~ create table public.customers(
+                id              text,
+                first_name      text,
+                last_name       text,
+                email           text,
+                phone           text,
+                address         text,
+                city            text,
+                state           text,
+                zipcode         text
+            )
+
+        - Adding data from s3
+            ~ copy public.customers from 's3://linkedinrestaurantdelivery/Customer.csv'
+                iam_role 'arn:aws:iam::416563697340:role/RedshiftAccess'
+                delimiter ',';
+
+    S3 Buckets (Simple Storage Service)
+        - Amazon Simple Storage Service
+        - Place to store and protect data online
+        - Easily create clusters online
+        - Used to connect to several databases
+
+
+Google Cloud Platform (GCP)
+    - GCP is similar to Amazon Web Services in that it's a dominant suite of cloud computing services with over 100 products.
+    - Google BigQuery uses ANSI SQL. (ANSI stands for the American National Standards Institute)
+    - GCP also have Cloud SQL which provides services from MySQL, PostgreSQL and other relational databases.
+    - BigQuery argues that it ultimately has a lower three-year total cost of ownership compared to the other platforms mentioned, AWS and Snowflake. 
+    - Its key features include BigQuery Machine Learning, BigQuery Geographic Information Systems, BigQuery Business Intelligence Engine, and Connected Sheets. All these features help connect BigQuery to other platforms and analytic tools to maximize its offerings. 
+    - One of the analytics tools we'll see is Data Studio, which we can easily analyze data from BigQuery and Google Sheets. So, those who are unfamiliar with SQL can still benefit from this.
+
+    BigQuery
+        - Serverless, highly scalable, and cost-effective multi-cloud data warehouse designed for business agility.
+
+
+Microsoft Azure
+    - Azure is Microsoft Data Platform and one of the largest cloud provider.
