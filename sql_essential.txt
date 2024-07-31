@@ -1,0 +1,321 @@
+Data
+    Data is the plural of the word datum(a piece of information). That's why data are pieces of information.
+
+Database
+    A collection of data organized in various ways.
+
+Relational Database Management System (RDBMS)
+    Software system used to compose SQL statements.
+
+
+Clauses
+    SELECT *                # one clause
+    FROM table_name         # one clause
+    ORDER BY column_name    # one clause
+    - Total three clauses
+
+
+SQL Comment
+    - Plain or natural way to describe a query. ( --, /* */)
+
+    - SELECT with CONCAT
+        ~ SELECT 
+            CONCAT(FirstName, ' ', LastName) AS "Customer Name",
+            Email
+        FROM 
+            Customer;
+
+    - SELECT ... FROM ... JOIN ... WHERE ... GROUP BY ... HAVING ... ORDER BY ... LIMIT ...
+        ~ SELECT 
+            CONCAT(c.FirstName, ' ', c.LastName) AS `Customer Name`,
+            c.Email,
+            o.OrderId,
+            o.OrderDate,
+            SUM(od.Quantity * od.UnitPrice) AS TotalAmount
+        FROM 
+            Customer c
+        JOIN 
+            Orders o ON c.CustomerId = o.CustomerId
+        JOIN 
+            OrderDetails od ON o.OrderId = od.OrderId
+        WHERE 
+            c.Email LIKE '%@example.com' AND o.OrderDate >= '2023-01-01'
+        GROUP BY 
+            c.FirstName, c.LastName, c.Email, o.OrderId, o.OrderDate
+        HAVING 
+            SUM(od.Quantity * od.UnitPrice) > 100
+        ORDER BY 
+            TotalAmount DESC
+        LIMIT 10;
+
+
+SQL CONDITIONS (WHERE)
+    Operator Types
+        Arithmetic
+            - Add (+)
+            - Subtract (-)
+            - Multiply (*)
+            - Divide (/)
+            - Modulo (%)
+        Comparison
+            - Equal to (=)
+            - Not equal to (<>)
+            - Greater than (>)
+            - Less than (<)
+            - Greater than or equal to (>=)
+            - Less than or equal to (<=)
+        Logical
+            - AND
+            - OR
+            - IN
+            - LIKE
+            - BETWEEN
+
+
+Date Filtering Using DATE Function  (Using DATE function doesn't need full DateTime format)
+    ~ SELECT
+        name
+        email
+    FROM 
+        users
+    WHERE
+        DATE(created_at) = "2024-07-26";
+    
+    -- DATE(created_at) = "2024-07-26" => "2024-07-26 00:00:00"
+
+
+WHEN THEN statement with CASE statement
+    ~ SELECT
+        InvoiceDate, BillingAddress, BillingCity, total,
+        CASE
+            WHEN total < 2.00 THEN 'Baseline Purchase'
+            WHEN total BETWEEN 2.00 AND 6.99 THEN 'Low Purchase'
+            WHEN total BETWEEN 7.00 AND 15.00 THEN 'Target Purchase'
+            ELSE 'Top Purchase'
+        END AS "Purchase Type"
+    FROM
+        Invoice
+    WHERE
+        "Purchase Type" = 'Top Purchase'
+    ORDER BY 
+        BillingCity;
+
+
+JOIN
+    A command that combines fields from two or more tables of a relational database.
+
+    Normalization
+        The process of distributing fields across related tables is known as normalization.
+
+    INNER JOIN
+        - An inner join only returns matching records. Any unmatched data from either table is ignored.
+        ~ SELECT * FROM Invoice i
+        INNER JOIN Customer c ON i.CustomerId = c.CustomerId;
+
+    LEFT OUTER JOIN
+        - A left outer join combines all the records from the left table with any matching records from the right table.
+        ~ SELECT * FROM Invoice i
+        LEFT OUTER JOIN Customer c ON i.CustomerId = c.CustomerId;
+
+    RIGHT OUTER JOIN
+        - A right outer join returns the entire right table as well as matching information from the left table.
+        ~ SELECT * FROM Invoice i
+        RIGHT OUTER JOIN Customer c ON i.CustomerId = c.CustomerId;
+
+
+Types of Functions
+    AGGREGATE
+        - MIN()
+        - MAX()
+        - AUG()
+        - COUNT()
+        - SUM()
+
+    STRING
+        - UPPER()
+        - SUBSTR()
+        - INSTR()
+        - LENGTH()
+        - LTRIM()
+        - REPLACE()
+        - TRIM()
+
+    DATE
+        - NOW()
+        - DATETIME()
+        - DATE()
+        - JULIANDAY()
+        - STRFTIME()
+        - TIME()
+
+    NUMBER
+        - FLOOR
+        - CEIL
+        - ROUND
+        - SQRT
+        - POWER
+
+    Concatenating ( || )
+        - Linking things together in a chain or series
+        ~ SELECT FirstName || ' ' || LastName AS "Customer Name"
+        FROM Customer;
+
+    Truncate
+        - To shorten or reduce
+        ~ SELECT SUBSTR(PostalCode, 1, 5) AS "5 Digit Postal Code"
+        FROM Customer;
+
+    DATE Functions
+        - Allow the manipulation of data that is stored in various date and time formats
+        ~ SELECT 
+            STRFTIME(%Y-%m-%d, Birthdate) AS "Birth Date",
+            STRFTIME(%Y-%m-%d, 'now') - STRFTIME(%Y-%m-%d, Birthdate) AS Age
+        FROM Customer;
+
+    AGGREGATE() Function (Global data)
+        - Turns a range of numbers into a single point of data
+        ~ SELECT
+            SUM(Total) AS "Total Sales",
+            AVG(Total) AS "Average Sale",
+            MAX(Total) AS "Maximum Sale",
+            MIN(Total) AS "Minium Sale",
+            COUNT(Total) AS "Sales Count"
+        FROM
+            Invoice;
+
+    Nesting Function
+        - A function contained within another function
+        ~ SELECT
+            ROUND(AVG(Total), 2) AS "Average Sale",
+        FROM
+            Invoice;
+
+
+GROUP BY (Used for Grouping data with AGGREGATE Functions, not Global data)
+    ~ SELECT
+        BillingCity,
+        AVG(total)
+    FROM
+        Invoice
+    GROUP BY
+        BillingCity;
+
+    - Having (Used for adding condition in AGGREGATE Functions)
+        ~ SELECT
+            BillingCity,
+            ROUND(AVG(total))
+        FROM
+            Invoice
+        GROUP BY
+            BillingCity
+        HAVING
+            AVG(total) > 5;
+
+    - GROUP BY with many Fields
+        ~ SELECT
+            BillingCountry,
+            BillingCity,
+            AVG(total)
+        FROM
+            Invoice
+        GROUP BY
+            BillingCountry, BillingCity;
+
+
+Nested Query
+    A query wrapped inside of another query.
+
+    ~ SELECT
+        InvoiceDate, BillingAddress, BillingCity, Total
+    FROM
+        Invoice
+    WHERE
+        Total < (SELECT
+                    ROUND(AVG(Total), 2) AS "Average Total"
+                FROM
+                    Invoice)
+    ORDER BY
+        Total DESC;
+
+    AGGREGATE SubQuery
+        ~ SELECT
+            BillingCity,
+            AVG(Total) AS "City Average",
+            (SELECT
+                AVG(Total)
+            FROM
+                Invoice) AS "Overall Average"
+        FROM
+            Invoice
+        GROUP BY
+            BillingCity
+        ORDER BY
+            BillingCity;
+
+    Non-AGGREGATE SubQuery
+        ~ SELECT
+            InvoiceDate, BillingAddress, BillingCity
+        FROM
+            Invoice
+        WHERE
+            InvoiceDate > (SELECT
+                            InvoiceDate
+                        FROM
+                            Invoice
+                        WHERE
+                            InvoiceId = 251);
+
+    IN Clause
+        ~ SELECT
+            InvoiceDate, BillingAddress, BillingCity
+        FROM
+            Invoice
+        WHERE
+            InvoiceDate IN (SELECT
+                            InvoiceDate
+                        FROM
+                            Invoice
+                        WHERE
+                            InvoiceId IN (251, 252, 253));
+
+    DISTINCT
+        ~ SELECT
+            TrackId, Composer, Name
+        FROM
+            Track
+        WHERE
+            TrackId NOT IN (SELECT
+                                DISTINCT TrackId
+                            FROM
+                                InvoiceLine
+                            ORDER BY
+                                TrackId);
+
+
+Stored Query
+    VIEW
+        - An SQL query that is saved and can be executed repeatedly or referenced by other queries.
+
+    Creating a VIEW
+        ~ CREATE VIEW
+            V_AvgTotal
+        AS
+            SELECT
+                ROUND(AVG(Total), 2) AS "Average Total"
+            FROM
+                Invoice;
+
+    Editing a VIEW  (some RDBMS can edit directly nut some can't meaning need to delete and recreate a view)
+        ~ DROP VIEW
+            V_AvgTotal;
+        CREATE VIEW
+            V_AvgTotal
+        AS
+            SELECT
+                AVG(Total) AS "Average Total"
+            FROM
+                Invoice;
+
+    Deleting a VIEW
+        ~ DROP VIEW
+            V_AvgTotal;
