@@ -31,6 +31,45 @@ Two Main Types of Data Models
             - Move sqldiff sqlite3 sqlite3_analyzer from zip file to C:\Program Files\Sqlite\   And declare sqlite3 as environment variable
             - Using CLI => sqlite3 {db_location}     # sqlite3 my_testing.db
 
+        MSSQL Installation
+            - Download MSSQL -> https://go.microsoft.com/fwlink/p/?linkid=2215158&clcid=0x409&culture=en-us&country=us
+            - Use GUI Tool for MSSQL (VSCode extension or SQL Server Management Studio (SSMS))
+
+            Check Server is running
+                # Win + R -> services.msc
+                    * Open Services
+                    - Check `SQL Server (MSSQLSERVER)` is running
+
+            Check Installation
+                => sqlcmd -S localhost -E           # Connect to your SQL Server instance using Windows Authentication
+                => SELECT @@VERSION;                # Check Version
+                => GO                               # Execute Statement
+
+            Change Password
+                => ALTER LOGIN sa WITH PASSWORD = 'root';
+                => GO
+                => ALTER LOGIN sa ENABLE;
+                => GO
+            
+            Other Config
+                - To enable 1433 port for MSSQL
+                    # Win + R -> SQLServerManager16.msc◘
+                        * Open `Sql Server Configuration Manager`
+                        * SQL Server Network Configuration > Protocols for MSSQLSERVER > TCP/IP -> Enabled
+                    # restart mssql server
+                        => net stop MSSQLSERVER
+                        => net start MSSQLSERVER
+
+                - To fix user login error (default user = `sa`)
+                    # use administrator terminal (Win+X > Terminal(Admin))
+                    # check login mode -> REG_DWORD: 0x1 -> 1 = Windows Authentication mode, 2 = Mixed mode (SQL Server and Windows Authentication)
+                        => reg query "HKLM\Software\Microsoft\Microsoft SQL Server\MSSQL16.MSSQLSERVER\MSSQLServer" /v LoginMode            # MSSQL16: 16 can vary based on version
+                    # change mode
+                        => reg add "HKLM\Software\Microsoft\Microsoft SQL Server\MSSQL16.MSSQLSERVER\MSSQLServer" /v LoginMode /t REG_DWORD /d 2 /f
+                    # restart mssql server
+                        => net stop MSSQLSERVER
+                        => net start MSSQLSERVER
+
 ACID
     Atomicity - Entire transaction either fails or succeeds
     Consistency - Transaction follows the constraints put in place

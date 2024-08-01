@@ -1,0 +1,262 @@
+Two Types of Database Table
+    - User Defined Tables
+    - Data Dictionary Tables
+
+    User Defined Table
+        - Collection of tables created and maintained by the users
+        - Contains user information
+        - Owned by different users
+
+    Data Dictionary Table
+        - Collection of tables created and maintained by Database Server
+        - Contains database information
+        - Owned by system user
+    
+        More about Data Dictionary Table
+            - Information about Server Users, Privileges Granted to Users, Table Constraints
+            - We use these tables to see database objects owned by us
+            - Frequently used data dictionary tables: USER_TABLES, USER_OBJECTS, and USER_CONSTRAINTS
+
+
+Data Types
+    Data Type specifies the kind of values that are inserted into each column.
+        - VARCHAR2(size)            => Variable-length character data (1 to 4000 size)
+        - CHAR(size)                => Fixed-length character data (1 to 2000 size)
+        - NUMBER(p,s)               => Variable-length numeric data (p stands for precision(decimal digits), s stands for scale(right of the decimal point))
+        - DATE                      => Date and time values
+        - LONG                      => Variable-length character data up to 2 GB
+        - CLOB                      => Character data up to 4 GB
+        - RAW and LONG RAW          => Raw Binary Data (RAW - up to 2000, LONG - up to 2 GB) # graphics, audio files, documents, arrays of binary data (can be queried or inserted but can't be manipulated)
+        - BLOB                      => Binary data up to 4 GB
+        - BFILE                     => Binary data stored in an external file, up to 4 GB
+        - ROWID                     => Base64 numbering system representing the unique address of a row in its table.
+
+
+Data Manipulation Language (DML)
+    - INSERT
+    - UPDATE
+    - DELETE
+    - MERGE
+
+    Copy Rows from Another Table (Create)
+        ~ INSERT INTO
+            new_table
+        (SELECT
+            *
+        FROM
+            old_table
+        WHERE
+            {condition});
+
+    Modify Data from Another Row in same Table (Update)
+        ~ UPDATE
+            table
+        SET
+            column1 = (SELECT column1 FROM table WHERE condition),
+            column2 = (SELECT column2 FROM table WHERE condition),
+            ...
+        WHERE
+            condition;
+
+    Modify Data from Column in different Table (Update)
+        ~ UPDATE
+            table1
+        SET
+            column1 = (SELECT column21 FROM table2 WHERE condition),
+            column2 = (SELECT column22 FROM table2 WHERE condition),
+            ...
+        WHERE
+            condition;
+
+    MERGE
+        - To update or insert data in a table based on a condition
+        - If a row already exists in a table, it is updated. Otherwise, it inserts a new row in a table
+        - Improves performance
+        - Useful in data warehouse applications
+        
+        Syntax
+            ~ MERGE INTO
+                table_name
+            USING
+                table/view/subquery
+            ON
+                {join condition}
+            WHEN MATCHED THEN
+                UPDATE SET
+                    col1 = value1, col2 = value2, ...
+            WHEN NOT MATCHED THEN
+                INSERT
+                    {col1, ...} VALUES {val1, ...};
+
+            Example
+                ~ MERGE INTO
+                    dept_copy_tab dc
+                USING
+                    dept_tab d
+                ON
+                    dc.deptno = d.deptno
+                WHEN MATCHED THEN
+                    UPDATE SET
+                        dc.mgr_id = 300
+                WHEN NOT MATCHED THEN
+                    INSERT 
+                    VALUES (d.deptno, d.dname, d.mgr_id, d.location_id);
+
+
+Transaction Control Language (TCL)
+    - TCL: COMMIT, ROLLBACK, SAVEPOINT
+    - Transaction is a collection of DML statements that form a logical block
+    - A transaction starts with the first DML statement
+    - A transaction ends when:
+        * COMMIT/ROLLBACK is given
+        * DDL/DCL statements are executed (auto commit occurs)
+        * User exits the system or system crashes
+
+    COMMIT
+        - It ends current transaction and saves all the data changes
+        - For DML, we need to issue commit explicitly to save changes
+        - DDL and DCL statements are auto commit
+        - Auto commit also occurs when user normally exits the system without explicitly issuing a COMMIT statement
+
+        Before Committing
+            - Changes can be reverted
+            - Current user can view results, but others cannot view changes made by this user
+            - Affected rows are locked
+
+        After Committing
+            - All changes will be permanent and can't be reverted
+            - All users can view the changes made by this user
+            - Locks on affected rows are released
+
+    ROLLBACK and SAVEPOINT
+        - ROLLBACK discards all pending data changes and ends current transaction
+        - SAVEPOINT creates a marker point within a transaction
+        - AutoRollback occurs when there is a system failure or abnormal termination of the system
+        - By using COMMIT and ROLLBACK, we can preview data changes before making them permanent.
+
+        Before ROLLBACK
+            - Changes made cannot be reverted
+            - Affected rows are locked
+            - Current user can view results of data changes but others cannot view those results
+
+        After ROLLBACK
+            - Data changes are reverted
+            - All locks on affected rows are released
+            - All data changes are discarded, so no access to anyone
+
+        COMMIT
+        NEW TRANSACTION
+            INSERT
+            UPDATE
+        SAVEPOINT A
+            DELETE
+            INSERT
+        SAVEPOINT B
+            DELETE
+
+        When rolling back, it returns to the state before NEW TRANSACTION occurs.
+        When rolling back to SAVEPOINT A, it returns to the state before SAVEPOINT A
+        When rolling back to SAVEPOINT B, it returns to the state before SAVEPOINT B
+
+    
+Data Definition Language (DDL)
+    - All DDL statements are auto commit (Once changes are made, the old state of data cannot be recovered)
+
+    CREATE Statement
+        - Syntax: 
+            ~ CREATE TABLE
+                {schema}.{table_name}
+                ({column} {datatype}, {column} {datatype}, ...);
+        - Tables belonging to other users are not in the user's schema:
+            ~ SELECT * FROM {schema}.{table_name};
+        - To check and confirm a table creation:
+            ~ DESCRIBE {table_name};
+            ~ DESC {table_name};
+
+    Constraints
+        - Enforces rules at table level
+        - Defined at table level or column level
+        - Prevent the deletion of a table when there are dependencies
+        - Must be satisfied for the operations to succeed
+
+        Primary Key
+            - Uniquely for every row thus helps to identify each row in the table
+        
+        Foreign Key
+            - Establishes a connection between the column in this table and the column of the referenced table
+
+        Not NULL
+            - Specifies that the column cannot contain a NULL value
+            
+        UNIQUE
+            - Ensures that all values in a column are different
+
+        DEFAULT
+            - Sets a default value for a column if no value is specified
+
+        CHECK
+            - Ensures that the values in a column satisfies a specific condition
+
+        CREATE INDEX
+            - Used to create and retrieve data from the database very quickly
+
+        Example:
+            ~ CREATE TABLE countries (
+                country_id NUMBER(10),
+                country_name VARCHAR2(20),
+                country_code VARCHAR2(10) CONSTRAINT countries_country_code_nn NOT NULL,    # column level constraints
+                country_region VARCHAR2(20),
+                CONSTRAINT countries_country_id_pk PRIMARY KEY(country_id)  # table level constraints (after column specifications)
+            );
+
+    Create a table using a SubQuery
+        ~ CREATE TABLE
+            employees_dept40
+        AS (SELECT
+                empno, name, job, salary
+            FROM
+                emp_tab
+            WHERE
+                deptno = 40);
+
+    ALTER Statement
+        - Used to add, modify, or drop columns from a table
+        - Add columns to a table
+            ~ ALTER TABLE
+                {table_name}
+            ADD
+                ({column} {datatype}, {column} {datatype}, ...);
+        - Modify columns in a table
+            ~ ALTER TABLE
+                {table_name}
+            MODIFY
+                ({column} {datatype}, {column} {datatype}, ...);
+        - Drop columns from a table
+            ~ ALTER TABLE
+                {table_name}
+            DROP COLUMN
+                ({column});
+
+    DROP Statement
+        - Drop a table (Removes all rows from a table and the table structure) 
+        syntax:
+            ~ DROP TABLE {table_name};
+
+    RENAME Statement
+        - Rename a table, view, synonym, or sequence
+        syntax:
+            ~ RENAME 
+                {old_table_name}
+            TO 
+                {new_table_name};
+
+    TRUNCATE Statement
+        - Remove all rows and also releases storage space used by the table
+        syntax:
+            ~ TRUNCATE TABLE
+                {table_name};
+
+        Differences between DELETE & TRUNCATE
+            - TRUNCATE is a DDL statement and the changes made are permanent, so the previous state cannot be recovered.
+            - In DELETE, we can get the previous state back by using rollback
+            - TRUNCATE will release the storage space that was used by the table, but DELETE does not do so.
