@@ -144,7 +144,6 @@ Transaction Control Language (TCL)
             - All locks on affected rows are released
             - All data changes are discarded, so no access to anyone
 
-        COMMIT
         NEW TRANSACTION
             INSERT
             UPDATE
@@ -153,6 +152,7 @@ Transaction Control Language (TCL)
             INSERT
         SAVEPOINT B
             DELETE
+        COMMIT
 
         When rolling back, it returns to the state before NEW TRANSACTION occurs.
         When rolling back to SAVEPOINT A, it returns to the state before SAVEPOINT A
@@ -252,6 +252,7 @@ Data Definition Language (DDL)
 
     TRUNCATE Statement
         - Remove all rows and also releases storage space used by the table
+        - Used to delete data from a table, while retaining the table's structure (column headings and constraints are retained within the table)
         syntax:
             ~ TRUNCATE TABLE
                 {table_name};
@@ -260,3 +261,9 @@ Data Definition Language (DDL)
             - TRUNCATE is a DDL statement and the changes made are permanent, so the previous state cannot be recovered.
             - In DELETE, we can get the previous state back by using rollback
             - TRUNCATE will release the storage space that was used by the table, but DELETE does not do so.
+
+    TRUNCATE neglecting foreign key
+        ~ ALTER TABLE table_2         (table_2's foreign key referencing table_1's primary key)
+        DROP CONSTRAINT foreign_key_name
+
+        TRUNCATE TABLE table1;

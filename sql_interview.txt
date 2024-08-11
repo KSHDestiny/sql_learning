@@ -1,0 +1,62 @@
+When and how might we use an `alias`?
+    - We can use aliases on columns as well as tables
+    - Aliases save us some typing as well as produce new columns
+    - Aliases for the table do not use the keyword `AS`
+
+What are the three relationship types in SQL?
+    - One to One    # one teacher teaches one subject
+    - One to Many   # one teacher can have many students
+    - Many to Many  # many students can enroll in many subjects
+
+How many main clauses are in a SQL query and what are they?
+    - There are six main clauses.
+    => SELECT
+        *
+    => FROM
+        table
+    => WHERE
+        condition
+    => ORDER BY
+        order_column
+    => HAVING
+        aggregate_function_condition
+    => GROUP BY
+        grouped_column
+
+What is the order of execution for a SELECT statement?
+    Query Order of Execution
+    - FROM      : where data is coming from
+    - WHERE     : what is returned
+    - GROUP BY  : how data is grouped
+    - HAVING    : which characteristics
+    - SELECT    : what data is returned
+    - ORDER BY  : how data is sorted
+
+What is a `CONSTRAINT`?
+    - A CONSTRAINT controls what type of data is allowed into a table
+    - Examples:
+        Primary Keys
+        Foreign Keys
+        UNIQUE
+        NOT NULL
+
+Name five aggregate functions. What do they do?
+    - SUM()     : returns a total
+    - AVG()     : returns the average of numbers
+    - MIN()     : returns the lowest or oldest(date)
+    - MAX()     : returns the highest or newest(date)
+    - COUNT()   : returns the number of values
+
+What are the fives types of SQL commands?
+    - Data Definition Language          : defines the table structure # create/drop/alter the table
+    - Data Manipulation Language        : modify or manipulate the data within a table  # insert/update/delete data within a table
+    - Data Control Language             : who has access through granting and revoking permission to the database
+    - Transaction Control Language      : group related transactions
+    - Data Query Language               : how we query the data or information that we need
+
+Name five keyword comparison operators and what they do?
+    - BETWEEN               : returns data within a range of values
+    - IN                    : returns data within a list of values
+    - LIKE                  : returns data similar to a given pattern (use of wildcards is common)
+    - IS NULL/ IS NOT NULL  : returns null or non-null value 
+    - EXISTS                : used to determine if a subquery returns values or not

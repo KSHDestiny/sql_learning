@@ -1,0 +1,91 @@
+Data Analyst
+    - Data Analysts are responsible for gathering and organizing data to present in a report that helps people understand a story
+    - They often gather the data into spreadsheets, or other tools to present data in tables, charts and graphs.
+    - For smaller datasets, Excel works great. For complex and larger datasets, the data will be stored in a data warehouse or a relational database.
+
+    Analytics
+        - Building on skills in the marketing field
+        - Creating code to calculate web analytics
+        - Developing visualizations and dashboards
+
+    Key Performance Indicators (KPIs)
+        - Indicates of progress toward an intended result. (eg: total and unique visitors, bounce rates, page views)
+
+    Data Visualization
+        - The graphic representation of data to help tell a story
+        - Good Visualization uses Images, Colors, Shapes, Sizes
+
+        Data Visualization Tools
+            - Microsoft Power BI
+            - Tableau
+            - Google Data Studio
+            - Microsoft Excel
+
+Data Engineer
+    - Data engineers help organizations extract, transform, and load data from one source to another
+    - Data engineering requires in-depth knowledge of SQL
+    - Developing and maintaining online store and Mobile App
+    - Gathering Data and Transforming for Analysis
+    - Protecting Data and Servers
+    - Builds pipelines to prepare data for the needs of an organization
+    - Data engineers need to have expertise in translating data for the needs of analysts, software developers, and data scientists
+    - Data engineers take massive amounts of raw, unstructured data from various sources, transform it into formats that the organization needs and load them into data warehouses
+
+    Engineering
+        - Translating skills into data engineering, web, and mobile development
+        - May apply SQL and other object-oriented programming languages like Python
+
+    Data Engineers are familiar with
+        - Python
+        - Linux and Unix commands
+        - Secure FTP
+        - API development
+        - Encryption Protocols
+
+    ETL
+        - Extract
+        - Transform
+        - Load
+
+    ETL tools for Big Data
+        - MapReduce
+        - Hive
+        - Spark
+
+Database Administrator (DBA)
+    - Database administrators are responsible for troubleshooting the database management system, along with supporting the hardware and software related to both the database and server where the database is located
+    - Creates and maintains databases for an organization
+    - Keeping database secure from internal and external threats
+    - Maintaining regular backups
+    - Working with software developers to write efficient queries
+    - Troubleshoot the database management system (DBMS)
+    - Support hardware and software for the database and associated servers
+    - Manage security access and storage
+    - Have familiarity with server operating systems
+    - DBAs use Data Manipulation Language(DML) and Data Definition Language(DDL)
+
+Data Science
+    - SQL use in descriptive and predictive analytics
+    - May apply other programming languages like Python and R
+    - Data Science uses Math, Statistics, Computer Science, Scientific method
+    - Data Scientists use SQL along with other languages and tools for data preparation, evaluation, and then use tools for predictive analytics using artificial intelligence like machine learning
+    - Aggregate Functions (sum, average, count, minimum, maximum, median, standard deviation, variance, mode, correlation coeffic)
+    - Data scientist use SQL's built-in statistical functions to discover data insights and patterns
+    
+    Goal
+        - Find insights that can help us interpret the past based on patterns and trends
+
+    Traditional Predictive Modeling
+        - Extract data from data warehouse
+        - Data scientists create initial models
+        - Initial models fed new data
+        - Machine learning techniques are applied (such as regression, classification, clustering)
+
+    New Predictive Modeling
+        - Create machine learning models right in SQL syntax
+
+
+SQLite
+    - Lightweight DBMS
+    - Works on Android and IOS
+    - Distributed solutions may not be the best application for SQLite
