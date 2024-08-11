@@ -1,0 +1,118 @@
+Big Data
+    Big data is the concept of collecting, organizing, and analyzing massive amount of data from a variety of sources.
+
+    Hadoop MapReduce
+        - Processing large amounts of data in parallel
+
+    NoSQL
+        - Not only SQL; non-relational or distributed
+
+    SQL and ML
+        - Machine Learning
+
+    NewSQL
+        - RDMS with NoSQL scalability
+
+
+Relational Database
+    
+    Entity
+        - An entity is "a single unique object in the real world that is being mastered. Examples of an entity are a single person, single product, or single organization".
+
+    Entity-Relationship Diagram (ERD)
+        - An entity-relationship model, also called an entity-relationship diagram (ERD), is a graphical representation of entities and their relationships to each other.
+
+    Column Constraints
+        Specify rules for the data at the column level.
+            - NULL or NOT NULL
+            - UNIQUE
+            - PRIMARY KEY, FOREIGN KEY
+            - DEFAULT
+
+    Joining by Keys
+        - Keys joined together need the same data type.
+        - Related keys can have different names that are relevant to the table the data is stored in.
+        - Consistency is key!
+
+
+Finding Missing Data
+    Identify missing data using common SQL query for finding null values, blanks, and spaces.
+
+    Null Value
+        - Represents an empty value or cell
+        - Not the same as a zero value or a blank or space value
+
+
+Finding Possible Inaccurate Data Values
+    Use string functions, including LIKE and SQL wildcards, to identify incomplete or incorrect data based on a set of valid values.
+
+
+Documentation
+    - A definition of the data in each column
+    - The source of the data in a column
+    - How the data in each column is calculated
+    - The valid values allowed in a column
+
+
+Finding Duplicate Rows
+    Using GROUP BY
+        - Group rows together that have the same values
+        - Aggregate functions provide one data value summarized from many records
+
+    # Read Job Count based on company
+    ~ SELECT
+        c.id, c.name, COUNT(1) AS "Job Count"
+    FROM
+        jobs j
+    JOIN
+        companies c
+    ON
+        j.company_id = c.id
+    GROUP BY
+        c.id
+    ORDER BY
+        "Job Count" DESC;
+
+    Using Aggregate functions and Identifying Duplicate Records
+        - Create and summarize data into groups
+        - Identify duplicate data
+        - Improve data analysis and data applications
+
+        ~ SELECT
+            c.id, c.name, COUNT(1) AS "Job Count"
+        FROM
+            jobs j
+        JOIN
+            companies c
+        ON
+            j.company_id = c.id
+        GROUP BY
+            c.id
+        HAVING
+            COUNT(1) > 1
+        ORDER BY
+            "Job Count" DESC;
+
+    
+Working with Date
+    ~ SELECT
+        YEAR(created_at),
+        MONTH(created_at),
+        DAY(created_at)
+    FROM
+        jobs
+    WHERE
+        YEAR(created_at) > 2023;
+
+
+Transact-SQL
+    - Dealing with large transactions
+    - Referential integrity
+    - Error handling
+
+
+Data Visualization
+    Incorporating SQL into web app
+
+    Plotly
+        - an open-source graphing library for Python

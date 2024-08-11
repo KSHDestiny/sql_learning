@@ -1,0 +1,442 @@
+Common Table Expressions (CTEs)
+    - CTEs are a way to define a temporary result set that we can only use within the scope of that query.
+    - CTEs are subsets of larger datasets that we can treat just alike regular tables.
+
+    ~ WITH num_users AS (
+        SELECT
+            customer_id,
+            SUM(number_of_users) AS total_users
+        FROM
+            subscriptions
+        GROUP BY
+            customer_id
+    )
+    SELECT
+        AVG(total_users) AS average_users
+    FROM
+        num_users;
+
+    # can't use nested aggregate functions like AVG(SUM(number_of_users)) => So, need CTEs
+
+    Advantages of CTEs over Subqueries
+        - CTEs are reusable
+        - CTEs offer greater readability
+        - CTEs can be recursive
+        
+
+    Exercise - Pull descriptive statistics with CTEs
+        ~ WITH MonthlyRevenue AS (SELECT
+            MONTH(s.OrderDate) AS OrderMonth,
+            p.ProductName,
+            SUM(s.Revenue) AS Revenue
+        FROM
+            Subscriptions s
+        JOIN
+            Products p
+        ON
+            s.ProductID = p.ProductID
+        WHERE
+            s.OrderDate BETWEEN '2022-01-01' AND '2022-12-31'
+        GROUP BY
+            OrderMonth, p.ProductName)
+
+        SELECT
+            ProductName,
+            MIN(Revenue) AS MIN_REV,
+            MAX(Revenue) AS MAX_REV,
+            AVG(Revenue) AS AVG_REV,
+            STDDEV(Revenue) AS STD_DEV_REV
+        FROM
+            MonthlyRevenue
+        GROUP BY
+            ProductName;
+
+    
+    Exercise - Explore variable distributions with CTEs
+        ~ WITH num_users AS(SELECT
+            UserId,
+            COUNT(*) AS Num_Link_Clicks
+        FROM
+            FrontendEventLog
+        WHERE
+            EventId = 5
+        GROUP BY
+            UserId)
+
+        SELECT
+            Num_Link_Clicks,
+            COUNT(Num_Link_Clicks) AS Num_Users
+        FROM
+            num_users
+        GROUP BY
+            Num_Link_Clicks
+        ORDER BY
+            Num_Link_Clicks DESC;
+
+    
+    Exercise - Payment funnel analysis with CTEs
+        ~ WITH max_status_reached AS (
+            SELECT
+                subscriptionid,
+                max(statusid) AS maxstatus
+            FROM
+                paymentstatuslog
+            GROUP BY
+                subscriptionid
+        ),
+        paymentfunnelstages AS (
+            SELECT
+                subs.subscriptionid,
+                case when maxstatus = 1 then 'PaymentWidgetOpened'
+                    when maxstatus = 2 then 'PaymentEntered'
+                    when maxstatus = 3 and currentstatus = 0 then 'User Error with Payment Submission'
+                    when maxstatus = 3 and currentstatus != 0 then 'Payment Submitted'
+                    when maxstatus = 4 and currentstatus = 0 then 'Payment Processing Error with Vendor'
+                    when maxstatus = 4 and currentstatus != 0 then 'Payment Success'
+                    when maxstatus = 5 then 'Complete'
+                    when maxstatus is null then 'User did not start payment process'
+                    end AS paymentfunnelstage
+            FROM
+                subscriptions subs
+            LEFT JOIN
+                max_status_reached m
+            ON
+                subs.subscriptionid = m.subscriptionid
+        )
+
+        SELECT
+            paymentfunnelstage,
+            count(subscriptionid) AS subscriptions
+        FROM
+            paymentfunnelstages
+        GROUP BY
+            paymentfunnelstage;
+
+
+Pivoting with CASE
+    - Subscriptions Table
+        CustomerID          Status
+        123                 5
+        123                 5
+        234                 5
+        234                 3
+
+    ~ SELECT
+        customer_id,
+        SUM(
+            CASE
+                WHEN status = 5 THEN 1
+                ELSE 0
+            END
+        ) AS NumStatus5
+    FROM
+        subscriptions
+    GROUP BY
+        customer_id;
+
+    - Query Output
+    CustomerID  NumStatus5
+    123         2
+    234         1
+
+
+    Exercise - Creating Binary columns with CASE
+        ~ SELECT
+            customerid,
+            COUNT(productid) AS num_products,
+            SUM(numberofusers) AS total_users,
+            CASE
+                WHEN COUNT(productid) = 1 OR SUM(numberofusers) >= 5000 THEN 1
+                ELSE 0
+            END AS upsell_opportunity
+        FROM
+            subscriptions
+        GROUP BY
+            customerid;
+
+    Exercise - Create aggregated columns with CASE
+        ~ SELECT
+            userid,
+            SUM(CASE
+                WHEN el.eventid = 1 THEN 1
+                ELSE 0
+            END) AS ViewedHelpCenterPage,
+            SUM(CASE
+                WHEN el.eventid = 2 THEN 1
+                ELSE 0
+            END) AS ClickedFAQs,
+            SUM(CASE
+                WHEN el.eventid = 3 THEN 1
+                ELSE 0
+            END) AS ClickedContactSupport,
+            SUM(CASE
+                WHEN el.eventid = 4 THEN 1
+                ELSE 0
+            END) AS SubmittedTicket
+        FROM
+            frontendeventlog el
+        JOIN
+            frontendeventdefinitions def
+        ON
+            el.eventid = def.eventid
+        WHERE
+            eventtype = 'Customer Support'
+        GROUP BY
+            userid;
+
+
+UNION
+    - With a UNION, the columns must be the same numbers with the same order and data type in each column
+    - It does aligning each column of all the datasets vertically to create one main output dataset.
+
+    Rules
+        Rule:1 - Each result set or SELECT statement must contain the same number of columns
+        Rule:2 - The columns of each dataset in the UNION must be in the same order
+        Rule:3 - Each column must have the same data type as the corresponding columns in the other datasets
+
+    UNION vs UNION ALL
+        - UNION removes all duplicate rows from the final output, while UNION ALL doesn't remove duplicate rows
+        - From an optimization standpoint, it's better to use UNION ALL if the data aren't duplicates since calculating DISTINCT with UNION can be computationally taxing
+
+    Combining multiple data sources with UNION
+        ~ SELECT
+            name, email
+        FROM
+            websiteleads
+        UNION
+            SELECT
+                poc_name,
+                poc_email
+            FROM
+                prospects
+        UNION
+            SELECT
+                name, email
+            FROM
+                Users;
+
+    Exercise - Combine product tables with UNION
+        ~ WITH all_subscriptions AS (
+            SELECT
+                subscriptionid,
+                expirationdate
+            FROM
+                subscriptionsproduct1
+            WHERE
+                active = 1 
+            UNION ALL
+                SELECT
+                    subscriptionid,
+                    expirationdate
+                FROM
+                    subscriptionsproduct2
+                WHERE
+                    active = 1 
+        )
+        SELECT
+            date_trunc('year', expirationdate) AS exp_year, 
+            count(*) AS subscriptions
+        FROM 
+            all_subscriptions
+        GROUP BY 
+            date_trunc('year', expirationdate);
+
+    Exercise - Unpivoting columns into rows using UNION
+        ~ WITH all_cancelation_reasons AS (
+            SELECT
+                subscriptionid,
+                cancelationreason1 AS cancelationreason
+            FROM
+                cancelations
+            UNION
+                SELECT
+                    subscriptionid,
+                    cancelationreason2 AS cancelationreason
+                FROM
+                    cancelations
+            UNION
+                SELECT
+                    subscriptionid,
+                    cancelationreason3 AS cancelationreason
+                FROM
+                    cancelations
+        )
+        SELECT 
+            CAST(COUNT(
+                CASE WHEN cancelationreason = 'Expensive' 
+                THEN subscriptionid end) AS float)
+            /COUNT(DISTINCT subscriptionid) AS percent_expensive
+        FROM    
+            all_cancelation_reasons;
+
+
+Dealing with Hierarchical Data
+    Self Joins
+        - The syntax and method are exactly the same with other joins
+        - The primary key and foreign key that we're connecting aren't equal and they often represent hierarchical relationships like employee and manager, or user and admin
+        - The foreign key column can have null values
+
+    Relating users and admins using a self join
+        ~ SELECT
+            users.name AS username,
+            admin.name AS adminname
+        FROM
+            users
+        LEFT JOIN
+            users admin
+        ON
+            users.adminid = admin.userid;
+
+    Exercise - Employee-manager data with a self join
+        ~ SELECT
+            employees.employeeid,
+            employees.name AS employee_name,
+            manager.name AS manager_name,
+            coalesce(manager.email, employees.email) AS contact_email
+        FROM
+            employees
+        LEFT JOIN
+            employees manager
+        ON
+            employees.managerid = manager.employeeid
+        WHERE
+            employees.department = 'Sales';
+    # coalesce(value1, value2, value3) => returns the first non-null value in a list. // if value1 & value2 are null & value3 is non-null, then return value3
+
+    Exercise - Comparing rows within the same table
+        ~ WITH monthly_revs AS (
+            SELECT 
+                DATE_TRUNC('month', orderdate) as order_month, 
+                SUM(revenue) as monthly_revenue
+            FROM 
+                subscriptions
+            GROUP BY 
+                DATE_TRUNC('month', orderdate))
+
+        SELECT
+            current.order_month AS current_month,
+            previous.order_month AS previous_month,
+            current.monthly_revenue AS current_revenue,
+            previous.monthly_revenue AS previous_revenue
+        FROM
+            monthly_revs current
+        JOIN
+            monthly_revs previous
+        WHERE
+            current.monthly_revenue > previous.monthly_revenue 
+            AND 
+            DATEDIFF('month', previous.order_month, current.order_month) = 1;
+
+
+Window Functions
+    - Window functions perform calculations across a specified set of rows, or a window.
+    - The data is partitioned into pre-specified segments, and the calculation is performed for each segment.
+    - SQL is able to access a bunch of related rows behind the scenes and perform a calculation for them.
+
+    Three Window Functions to Rank Values
+        - ROW_NUMBER()  # provides a sequential number to each row and doesn't consider ties or duplicates at all
+        - RANK()        # ranks each row and allows for tied rank values when there are duplicates
+        - DENSE_RANK()  # works almost the same way as rank but after a tie, dense rank will number the next rank value with the sequential number
+
+    Customer    Orders  ROW_NUMBER()    RANK()  DENSE_RANK()
+    A           500     1               1       1
+    B           450     2               2       2
+    C           450     3               2       2
+    D           450     4               2       2
+    E           400     5               5       3
+    F           300     6               6       4
+
+    Pulling the most recent sale with ROW_NUMBER()
+        ~ WITH sale_ranks AS (
+            SELECT
+                salesemployeeid,
+                saleamount,
+                saledate,
+                ROW_NUMBER() 
+                    OVER(
+                        PARTITION BY
+                            salesemployeeid
+                        ORDER BY
+                            saledate
+                        DESC) AS most_recent_sale
+            FROM
+                sales)
+
+        SELECT
+            *
+        FROM
+            sale_ranks
+        WHERE
+            most_recent_sale = 1;
+
+    More Window Functions
+        - COUNT()
+        - MAX()
+        - MIN()
+        - AVG()
+        - LEAD()
+        - LAG()
+
+    Basic Window Functions Formula
+        WINDOW_FUNCTION( ... ) OVER ( [PARTITION BY ...] [ORDER BY ...] )
+
+        example: Divide Color Candy and Count
+            ~ COUNT(*) OVER ( PARTITION BY color )
+
+    Three Key Questions to ASK
+        1. What do we want to calculate?
+        2. What do we want to partition by?
+        3. Is order important?
+
+    Exercise - Get running totals with window functions
+        ~ SELECT
+            salesemployeeid,
+            saledate,
+            saleamount,
+            SUM(saleamount)
+                OVER(
+                    PARTITION BY
+                        salesemployeeid
+                    ORDER BY
+                        saledate
+                ) AS running_total,
+            SUM(saleamount)
+                OVER(
+                    PARTITION BY
+                        salesemployeeid
+                    ORDER BY
+                        saledate
+                ) * 1.0 / 
+                quota AS percent_quota
+        FROM
+            sales s
+        JOIN
+            employees e
+        ON
+            s.salesemployeeid = e.employeeid
+        ORDER BY
+            salesemployeeid, saledate;
+
+    Exercise - Timestamp difference with LEAD()
+        ~ SELECT
+            *,
+            LEAD(movementdate, 1)
+                OVER(
+                    PARTITION BY
+                        subscriptionid
+                    ORDER BY
+                        movementdate
+                ) AS NextStatusMovementDate,
+            LEAD(movementdate, 1)
+                OVER(
+                    PARTITION BY
+                        subscriptionid
+                    ORDER BY movementdate
+                ) - movementdate
+                AS TimeinStatus
+        FROM
+            paymentstatuslog
+        WHERE
+            subscriptionid = '38844'
+        ORDER BY
+            movementdate;

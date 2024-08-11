@@ -319,3 +319,35 @@ Stored Query
     Deleting a VIEW
         ~ DROP VIEW
             V_AvgTotal;
+
+    
+Calculated Column
+    ~ SELECT
+        bank_transaction_pk AS "Bank Transaction",
+        account_number_fk AS "Account Num",
+        transaction_date AS "Transaction Date",
+        amount AS Amount,
+        amount + 10 AS "Amount Plus $10 Fee"
+    FROM
+        bank_transactions
+    WHERE
+        amount + 10 > 20            # can't use calculated column
+    ORDER BY
+        "Amount Plus $10 Fee";
+
+    # integer/integer -> integer,  integer/float -> float (age/2.0 -> float type)
+
+    - Case with Calculated Column
+    ~ SELECT
+        first_name || ' ' || last_name AS "User Name",
+        age as Age,
+        CASE
+            WHEN age <=17 THEN 'Minors'
+            WHEN age BETWEEN 18 AND 59 THEN 'Adults'
+            WHEN age BETWEEN 60 AND 90 THEN 'Seniors'
+            ELSE 'Wise'
+        END AS "Age Category"
+    FROM
+        customer_details
+    ORDER BY
+        "Age Category";
